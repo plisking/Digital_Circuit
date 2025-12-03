@@ -1,6 +1,6 @@
 # 数字电路仿真平台 (Digital Circuit Simulation)
 
-这是一个基于 Next.js 的数字电路仿真网站，用于展示经典集成电路的功能和逻辑。
+这是一个基于 Next.js 的数字电路仿真网站，用于展示数字电路课程中，经典集成电路的功能和逻辑。
 
 ## 功能特点
 
@@ -8,6 +8,9 @@
 - **交互式仿真**: 点击输入开关改变电平，实时观察输出灯的变化。
 - **逻辑图展示**: 清晰展示芯片管脚、输入输出连接。
 - **时序控制**: 支持 CP 脉冲和复位功能。
+
+![MyVideo_3](https://github.com/user-attachments/assets/f04df151-1bec-4dc3-9b51-d1d4b6aabdad)
+
 
 ## 本地开发
 
@@ -20,7 +23,7 @@
    ```bash
    npm run dev
    ```
-   访问 http://localhost:3000
+   访问 http://localhost:16390
 
 ## 部署到云服务器
 
@@ -36,7 +39,7 @@
    ```bash
    npm start
    ```
-   默认运行在 3000 端口。
+   默认运行在 16390 端口。
 
 3. **使用 PM2 管理 (推荐)**:
    ```bash
