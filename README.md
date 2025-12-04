@@ -1,6 +1,7 @@
 # 数字电路仿真平台 (Digital Circuit Simulation)
 
-这是一个基于 Next.js 的数字电路仿真网站，专为《数字与逻辑电路课程 DSR》设计，用于直观展示经典 74LS 系列集成电路的功能与逻辑。
+这是一个基于 Next.js 的数字电路仿真网站，专为数字电路课程设计，用于直观展示经典 74LS 系列集成电路的功能与逻辑。
+<img width="1854" height="1344" alt="ScreenShot_2025-12-04_102000_524" src="https://github.com/user-attachments/assets/e3e116e2-d7ce-44ef-8bd3-18271eac2915" />
 
 ## 🌟 功能特点
 
