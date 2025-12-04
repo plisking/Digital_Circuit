@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import VisitorCounter from "@/components/VisitorCounter";
 
 export const metadata: Metadata = {
   title: "数字电路仿真 - 经典集成电路",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className="antialiased h-screen w-screen overflow-hidden">{children}</body>
+      <body className="antialiased h-screen w-screen overflow-hidden">
+        {children}
+        <VisitorCounter />
+      </body>
     </html>
   );
 }
