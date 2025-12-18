@@ -508,9 +508,6 @@ video {
 .fixed {
   position: fixed;
 }
-.absolute {
-  position: absolute;
-}
 .relative {
   position: relative;
 }
