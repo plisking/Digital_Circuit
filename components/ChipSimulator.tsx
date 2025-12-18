@@ -97,8 +97,9 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
   // Layout constants
   const width = 900; // Increased width
   const height = 700; // Increased height
-  const chipWidth = 260; // Wider chip
-  const chipHeight = 450; // Taller chip to spread pins
+  const isShiftReg = chip.id === 'shift-register-d';
+  const chipWidth = isShiftReg ? 600 : 260; // Wider chip for shift register
+  const chipHeight = isShiftReg ? 250 : 450; // Taller chip to spread pins, but shorter for shift reg
   const chipX = (width - chipWidth) / 2;
   const chipY = (height - chipHeight) / 2;
 
@@ -112,19 +113,160 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
       <div className="relative bg-white rounded-lg shadow-xl border-2 border-gray-200 overflow-hidden">
         <svg width={width} height={height} className="select-none font-sans">
           {/* Chip Body */}
-          <rect
-            x={chipX}
-            y={chipY}
-            width={chipWidth}
-            height={chipHeight}
-            rx={10}
-            fill="#ffffff"
-            stroke="#000000"
-            strokeWidth={4}
-          />
-          <text x={width/2} y={height/2} textAnchor="middle" fill="#000000" fontSize="32" fontWeight="bold">
-            {chip.name}
-          </text>
+          {isShiftReg ? (
+            <g>
+              {/* Main Container Outline (Optional, maybe just the FFs) */}
+              <rect
+                x={chipX}
+                y={chipY}
+                width={chipWidth}
+                height={chipHeight}
+                rx={10}
+                fill="#f8fafc"
+                stroke="#94a3b8"
+                strokeWidth={2}
+                strokeDasharray="5,5"
+              />
+              
+              {/* 4 D-FlipFlops */}
+              {[0, 1, 2, 3].map(i => {
+                const ffWidth = 100;
+                const ffHeight = 120;
+                const gap = 40;
+                const startX = chipX + (chipWidth - (4 * ffWidth + 3 * gap)) / 2;
+                const ffX = startX + i * (ffWidth + gap);
+                const ffY = chipY + (chipHeight - ffHeight) / 2;
+                
+                // Internal State for this FF
+                // We know state.val is 4 bits. Bit i corresponds to Q_i?
+                // Logic: Q0 is LSB (Bit 0), Q3 is MSB (Bit 3).
+                // But visually, usually Q0 is left or right?
+                // Shift Register: D -> Q0 -> Q1 -> Q2 -> Q3.
+                // So FF0 is Leftmost.
+                const qVal = !!(internalState.val & (1 << i));
+                const qPrevVal = i > 0 ? !!(internalState.val & (1 << (i - 1))) : inputs['D'];
+
+                return (
+                  <g key={i}>
+                    {/* FF Box */}
+                    <rect
+                      x={ffX}
+                      y={ffY}
+                      width={ffWidth}
+                      height={ffHeight}
+                      fill="#ffffff"
+                      stroke="#000000"
+                      strokeWidth={3}
+                    />
+                    {/* Labels */}
+                    <text x={ffX + 15} y={ffY + 30} fontSize="14" fontWeight="bold">D</text>
+                    <text x={ffX + ffWidth - 25} y={ffY + 30} fontSize="14" fontWeight="bold">Q</text>
+                    <text x={ffX + ffWidth - 25} y={ffY + ffHeight - 15} fontSize="14" fontWeight="bold">Q'</text>
+                    
+                    {/* Clock Triangle */}
+                    {/* CP input at left side, near bottom */}
+                    <path d={`M ${ffX} ${ffY + ffHeight - 25} L ${ffX + 10} ${ffY + ffHeight - 20} L ${ffX} ${ffY + ffHeight - 15}`} fill="none" stroke="black" strokeWidth={2} />
+                    <text x={ffX + 12} y={ffY + ffHeight - 16} fontSize="12" fontWeight="bold">CP</text>
+
+                    {/* Connections */}
+                    {/* Input D Wire */}
+                    {i === 0 ? (
+                       // From Chip Pin D to FF0.D
+                       // Use path for orthogonal routing
+                       <path 
+                         d={`M ${chipX} ${chipY + 0.36 * chipHeight} L ${ffX - 20} ${chipY + 0.36 * chipHeight} L ${ffX - 20} ${ffY + 25} L ${ffX} ${ffY + 25}`}
+                         fill="none"
+                         stroke={inputs['D'] ? '#ef4444' : '#333333'} strokeWidth={2} 
+                       />
+                    ) : (
+                       // From Previous Q to Current D
+                       <line 
+                         x1={ffX - gap} y1={ffY + 25} 
+                         x2={ffX} y2={ffY + 25} 
+                         stroke={qPrevVal ? '#ef4444' : '#333333'} strokeWidth={2} 
+                       />
+                    )}
+
+                    {/* Output Q Wire to Next D (drawn above) or Chip Pin */}
+                    {/* Also draw wire from Q to Chip Pin Q_i */}
+                    {/* Chip Pin Q_i is at top. */}
+                    {(() => {
+                        // Recalculate pinX based on new definition
+                        // 0.266, 0.5, 0.733, 0.966
+                        const factors = [0.266, 0.5, 0.733, 0.966];
+                        const pinX = chipX + factors[i] * chipWidth;
+                        const pinY = chipY; // Top of chip
+                        const qOutX = ffX + ffWidth;
+                        const qOutY = ffY + 25;
+                        
+                        return (
+                            <path 
+                                d={`M ${qOutX} ${qOutY} L ${pinX} ${qOutY} L ${pinX} ${pinY}`}
+                                fill="none"
+                                stroke={qVal ? '#ef4444' : '#333333'}
+                                strokeWidth={2}
+                            />
+                        );
+                    })()}
+
+                    {/* Clock Line */}
+                    {/* Common CP line running below FFs */}
+                    {(() => {
+                        const busY = chipY + 0.86 * chipHeight;
+                        const cpPortY = ffY + ffHeight - 20;
+                        // Branch from bus up to CP port
+                        // Go up in the gap to the left of FF
+                        const wireX = ffX - 15; 
+                        
+                        return (
+                            <path 
+                                d={`M ${wireX} ${busY} L ${wireX} ${cpPortY} L ${ffX} ${cpPortY}`}
+                                fill="none"
+                                stroke={inputs['CP'] ? '#ef4444' : '#333333'}
+                                strokeWidth={2}
+                            />
+                        );
+                    })()}
+
+                  </g>
+                );
+              })}
+              
+              {/* Main CP Bus Line */}
+              {/* From Left Pin to last FF branch */}
+              {/* Last FF branch is at startX + 3*(ffWidth+gap) - 15 */}
+              {(() => {
+                  const startX = chipX + (chipWidth - (4 * 100 + 3 * 40)) / 2;
+                  const lastBranchX = startX + 3 * (100 + 40) - 15;
+                  const busY = chipY + 0.86 * chipHeight;
+                  return (
+                    <line 
+                        x1={chipX} y1={busY} 
+                        x2={lastBranchX} y2={busY} 
+                        stroke={inputs['CP'] ? '#ef4444' : '#333333'} 
+                        strokeWidth={2} 
+                    />
+                  );
+              })()}
+
+            </g>
+          ) : (
+            <>
+              <rect
+                x={chipX}
+                y={chipY}
+                width={chipWidth}
+                height={chipHeight}
+                rx={10}
+                fill="#ffffff"
+                stroke="#000000"
+                strokeWidth={4}
+              />
+              <text x={width/2} y={height/2} textAnchor="middle" fill="#000000" fontSize="32" fontWeight="bold">
+                {chip.name}
+              </text>
+            </>
+          )}
 
           {/* Pins and Wires */}
           {chip.pins.map(pin => {
@@ -153,7 +295,7 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
               tx = px;
               ty = py + 25;
               wx = px;
-              wy = 60;
+              wy = chipY - 50;
             } else if (pin.side === 'bottom') {
               px = chipX + pin.x * chipWidth;
               py = chipY + chipHeight;
@@ -176,6 +318,7 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
                 <circle cx={px} cy={py} r={5} fill="#ffffff" stroke="#000000" strokeWidth={2} />
                 
                 {/* Pin Label */}
+                {!isShiftReg && (
                 <text 
                     x={tx} 
                     y={ty} 
@@ -187,6 +330,7 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
                 >
                   {pin.label}
                 </text>
+                )}
 
                 {/* Input Switch or Output LED */}
                 {(pin.type === 'input' || pin.type === 'clock') && (
@@ -224,7 +368,14 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
                 {pin.type === 'output' && (
                   <g>
                     <circle cx={wx} cy={wy} r={10} fill={isHigh ? '#ef4444' : '#e2e8f0'} stroke="#64748b" strokeWidth={2} />
-                    <text x={wx} y={wy - 18} textAnchor="middle" fill="#475569" fontSize="14" fontWeight="bold">
+                    <text 
+                        x={wx} 
+                        y={pin.side === 'bottom' ? wy + 28 : wy - 18} 
+                        textAnchor="middle" 
+                        fill="#475569" 
+                        fontSize="14" 
+                        fontWeight="bold"
+                    >
                         {pin.label}
                     </text>
                   </g>

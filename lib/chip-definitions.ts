@@ -438,5 +438,45 @@ export const chips: ChipDef[] = [
         nextState: { val, lastCP: cp }
       };
     }
+  },
+  {
+    id: 'shift-register-d',
+    name: '移位寄存器 (D触发器)',
+    description: '4级D触发器同步级联，展示数据移位',
+    initialState: { val: 0, lastCP: false },
+    pins: [
+      { id: 'CP', label: 'CP', type: 'clock', x: 0, y: 0.86, side: 'left' },
+      { id: 'D', label: 'Data In', type: 'input', x: 0, y: 0.36, side: 'left' },
+      // Outputs distributed at bottom to match the internal stages
+      // Shifted right to avoid overlapping with FF borders
+      // FF Right Edges are approx at 0.233, 0.466, 0.7, 0.933
+      // We move pins to approx 0.266, 0.5, 0.733, 0.966 (approx +20px)
+      { id: 'Q0', label: 'Q0', type: 'output', x: 0.266, y: 0, side: 'top' },
+      { id: 'Q1', label: 'Q1', type: 'output', x: 0.5, y: 0, side: 'top' },
+      { id: 'Q2', label: 'Q2', type: 'output', x: 0.733, y: 0, side: 'top' },
+      { id: 'Q3', label: 'Q3', type: 'output', x: 0.966, y: 0, side: 'top' },
+    ],
+    logic: (inputs, state) => {
+      const cp = inputs['CP'];
+      const d = inputs['D'];
+      const lastCP = state.lastCP;
+      let val = state.val;
+
+      if (!lastCP && cp) { // Rising Edge
+        // Shift: Q3=Q2, Q2=Q1, Q1=Q0, Q0=D
+        // Data flows D -> Q0 -> Q1 -> Q2 -> Q3
+        val = ((val << 1) & 0xF) | (d ? 1 : 0);
+      }
+
+      return {
+        outputs: {
+          Q0: !!(val & 1),
+          Q1: !!(val & 2),
+          Q2: !!(val & 4),
+          Q3: !!(val & 8)
+        },
+        nextState: { val, lastCP: cp }
+      };
+    }
   }
 ];

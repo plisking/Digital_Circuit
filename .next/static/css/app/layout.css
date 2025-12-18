@@ -508,14 +508,14 @@ video {
 .fixed {
   position: fixed;
 }
+.absolute {
+  position: absolute;
+}
 .relative {
   position: relative;
 }
 .bottom-2 {
   bottom: 0.5rem;
-}
-.left-2 {
-  left: 0.5rem;
 }
 .right-2 {
   right: 0.5rem;
