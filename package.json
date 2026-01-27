@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 16390",
-    "build": "next build && node scripts/run-next-on-pages.js",
+    "build": "next build && node scripts/run-next-on-pages.js --skip-build",
     "start": "next start -p 16390",
     "lint": "next lint"
   },
