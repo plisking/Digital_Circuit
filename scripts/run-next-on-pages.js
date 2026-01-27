@@ -1,6 +1,8 @@
 const { spawnSync } = require("node:child_process");
+const path = require("node:path");
 
-const cliPath = require.resolve("@cloudflare/next-on-pages/dist/index.js");
+const pkgPath = require.resolve("@cloudflare/next-on-pages/package.json");
+const cliPath = path.join(path.dirname(pkgPath), "bin", "index.js");
 
 const env = { ...process.env };
 
