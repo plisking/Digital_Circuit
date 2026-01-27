@@ -4,8 +4,13 @@ import { getVisitorCount, incrementVisitorCount } from "@/lib/visitor-store";
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
+type KVNamespaceLike = {
+  get<T = string>(key: string): Promise<T | null>;
+  put(key: string, value: string): Promise<void>;
+};
+
 type Env = {
-  VISITOR_KV: KVNamespace;
+  VISITOR_KV: KVNamespaceLike;
 };
 
 export async function GET(_request: Request, { env }: { env: Env }) {
