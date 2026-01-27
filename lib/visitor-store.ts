@@ -1,22 +1,15 @@
-import fs from 'fs/promises';
-import path from 'path';
+// NOTE: Cloudflare Pages (Edge Runtime) does not support the 'fs' module.
+// We are switching to an in-memory store for demonstration purposes.
+// For persistent storage on Cloudflare, you would use Cloudflare KV or D1.
 
-const DATA_FILE = path.join(process.cwd(), 'visitor-data.json');
+let memoryCount = 1024; // Initial mock value
 
 export async function getVisitorCount(): Promise<number> {
-  try {
-    const data = await fs.readFile(DATA_FILE, 'utf-8');
-    const json = JSON.parse(data);
-    return typeof json.count === 'number' ? json.count : 0;
-  } catch (error) {
-    // If file doesn't exist or error, return 0
-    return 0;
-  }
+  // In a real Edge app, fetch from KV here
+  return memoryCount;
 }
 
 export async function incrementVisitorCount(): Promise<number> {
-  let count = await getVisitorCount();
-  count++;
-  await fs.writeFile(DATA_FILE, JSON.stringify({ count }), 'utf-8');
-  return count;
+  memoryCount++;
+  return memoryCount;
 }
