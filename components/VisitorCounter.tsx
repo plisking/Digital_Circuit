@@ -6,33 +6,52 @@ export default function VisitorCounter() {
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
-    const checkAndIncrement = () => {
+    const checkAndIncrement = async () => {
       const lastVisit = localStorage.getItem('last_visit_timestamp');
       const now = Date.now();
       const tenMinutes = 10 * 60 * 1000;
 
-      const storedCount = parseInt(localStorage.getItem('visitor_count') || '0', 10);
-      const safeCount = Number.isFinite(storedCount) ? storedCount : 0;
-
-      let nextCount = safeCount;
       let shouldIncrement = false;
 
       if (!lastVisit) {
         shouldIncrement = true;
       } else {
         const lastTime = parseInt(lastVisit, 10);
-        if (isNaN(lastTime) || (now - lastTime > tenMinutes)) {
+        if (isNaN(lastTime) || now - lastTime > tenMinutes) {
           shouldIncrement = true;
         }
       }
 
-      if (shouldIncrement) {
-        nextCount = safeCount + 1;
-        localStorage.setItem('visitor_count', nextCount.toString());
-        localStorage.setItem('last_visit_timestamp', now.toString());
-      }
+      try {
+        const response = await fetch('/api/visitor-count', {
+          method: shouldIncrement ? 'POST' : 'GET',
+          cache: 'no-store',
+        });
 
-      setCount(nextCount);
+        if (!response.ok) {
+          throw new Error('Failed to load visitor count');
+        }
+
+        const data = (await response.json()) as { count: number };
+        if (Number.isFinite(data.count)) {
+          setCount(data.count);
+        }
+
+        if (shouldIncrement) {
+          localStorage.setItem('last_visit_timestamp', now.toString());
+        }
+      } catch {
+        const storedCount = parseInt(localStorage.getItem('visitor_count') || '0', 10);
+        const safeCount = Number.isFinite(storedCount) ? storedCount : 0;
+        const nextCount = shouldIncrement ? safeCount + 1 : safeCount;
+
+        if (shouldIncrement) {
+          localStorage.setItem('visitor_count', nextCount.toString());
+          localStorage.setItem('last_visit_timestamp', now.toString());
+        }
+
+        setCount(nextCount);
+      }
     };
 
     checkAndIncrement();
