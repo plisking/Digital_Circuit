@@ -11,6 +11,7 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
   const [inputs, setInputs] = useState<Record<string, boolean>>({});
   const [internalState, setInternalState] = useState<any>(chip.initialState);
   const [outputs, setOutputs] = useState<Record<string, boolean>>({});
+  const [scale, setScale] = useState(0.6);
 
   // Initialize inputs
   useEffect(() => {
@@ -95,37 +96,65 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
   };
 
   // Layout constants
-  const width = 900; // Increased width
+  const width = 1000; // Increased width
   const height = 700; // Increased height
   const isShiftReg = chip.id === 'shift-register-d';
   const chipWidth = isShiftReg ? 600 : 260; // Wider chip for shift register
   const chipHeight = isShiftReg ? 250 : 450; // Taller chip to spread pins, but shorter for shift reg
-  const chipX = (width - chipWidth) / 2;
+  const chipX = (width - chipWidth) / 2 + (isShiftReg ? 50 : 0);
   const chipY = (height - chipHeight) / 2;
 
   return (
-    <div className="flex flex-col items-center w-full h-full bg-white text-gray-900 p-4">
-      <div className="mb-4 text-center">
-        <h2 className="text-3xl font-bold text-blue-600">{chip.name}</h2>
-        <p className="text-gray-600 text-lg">{chip.description}</p>
+    <div className="flex flex-col items-center w-full h-full text-slate-950 p-4">
+      <div className="mb-8 text-center relative z-10">
+        <h2 className="text-5xl font-black text-blue-900 tracking-tight">{chip.name}</h2>
+        <p className="text-slate-700 text-xl mt-2 font-bold">{chip.description}</p>
       </div>
 
-      <div className="relative bg-white rounded-lg shadow-xl border-2 border-gray-200 overflow-hidden">
-        <svg width={width} height={height} className="select-none font-sans">
+      <div 
+        className="relative bg-white rounded-2xl shadow-2xl border-4 border-slate-900 overflow-hidden w-full min-w-[600px] flex flex-col"
+      >
+        <div className="absolute top-2 right-2 z-20 flex gap-2">
+            <button 
+                onClick={() => setScale(s => Math.min(s + 0.1, 1.5))}
+                className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-full font-bold border-2 border-slate-300 shadow-sm transition-colors"
+                title="放大"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </button>
+            <button 
+                onClick={() => setScale(s => Math.max(s - 0.1, 0.4))}
+                className="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-full font-bold border-2 border-slate-300 shadow-sm transition-colors"
+                title="缩小"
+            >
+               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+                </svg>
+            </button>
+        </div>
+        
+        <div className="w-full h-full overflow-auto flex justify-center items-center p-2 sm:p-6">
+            <svg 
+                viewBox={`0 0 ${width} ${height}`} 
+                className="select-none font-sans transition-all duration-200 ease-out"
+                style={{ width: `${scale * 100}%`, height: 'auto' }}
+            >
           {/* Chip Body */}
           {isShiftReg ? (
             <g>
-              {/* Main Container Outline (Optional, maybe just the FFs) */}
+              {/* Main Container Outline */}
               <rect
                 x={chipX}
                 y={chipY}
                 width={chipWidth}
                 height={chipHeight}
-                rx={10}
-                fill="#f8fafc"
-                stroke="#94a3b8"
-                strokeWidth={2}
-                strokeDasharray="5,5"
+                rx={12}
+                fill="#ffffff"
+                stroke="#000000"
+                strokeWidth={3}
+                strokeDasharray="8,4"
               />
               
               {/* 4 D-FlipFlops */}
@@ -137,12 +166,6 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
                 const ffX = startX + i * (ffWidth + gap);
                 const ffY = chipY + (chipHeight - ffHeight) / 2;
                 
-                // Internal State for this FF
-                // We know state.val is 4 bits. Bit i corresponds to Q_i?
-                // Logic: Q0 is LSB (Bit 0), Q3 is MSB (Bit 3).
-                // But visually, usually Q0 is left or right?
-                // Shift Register: D -> Q0 -> Q1 -> Q2 -> Q3.
-                // So FF0 is Leftmost.
                 const qVal = !!(internalState.val & (1 << i));
                 const qPrevVal = i > 0 ? !!(internalState.val & (1 << (i - 1))) : inputs['D'];
 
@@ -157,45 +180,40 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
                       fill="#ffffff"
                       stroke="#000000"
                       strokeWidth={3}
+                      rx={4}
                     />
                     {/* Labels */}
-                    <text x={ffX + 15} y={ffY + 30} fontSize="14" fontWeight="bold">D</text>
-                    <text x={ffX + ffWidth - 25} y={ffY + 30} fontSize="14" fontWeight="bold">Q</text>
-                    <text x={ffX + ffWidth - 25} y={ffY + ffHeight - 15} fontSize="14" fontWeight="bold">Q'</text>
+                    <text x={ffX + 15} y={ffY + 30} fontSize="16" fontWeight="900" fill="#000000">D</text>
+                    <text x={ffX + ffWidth - 25} y={ffY + 30} fontSize="16" fontWeight="900" fill="#000000">Q</text>
+                    <text x={ffX + ffWidth - 25} y={ffY + ffHeight - 15} fontSize="16" fontWeight="900" fill="#000000">Q'</text>
                     
                     {/* Clock Triangle */}
-                    {/* CP input at left side, near bottom */}
-                    <path d={`M ${ffX} ${ffY + ffHeight - 25} L ${ffX + 10} ${ffY + ffHeight - 20} L ${ffX} ${ffY + ffHeight - 15}`} fill="none" stroke="black" strokeWidth={2} />
-                    <text x={ffX + 12} y={ffY + ffHeight - 16} fontSize="12" fontWeight="bold">CP</text>
+                    <path d={`M ${ffX} ${ffY + ffHeight - 25} L ${ffX + 10} ${ffY + ffHeight - 20} L ${ffX} ${ffY + ffHeight - 15}`} fill="none" stroke="#000000" strokeWidth={3} />
+                    <text x={ffX + 12} y={ffY + ffHeight - 16} fontSize="14" fontWeight="900" fill="#000000">CP</text>
 
                     {/* Connections */}
                     {/* Input D Wire */}
                     {i === 0 ? (
-                       // From Chip Pin D to FF0.D
-                       // Use path for orthogonal routing
                        <path 
                          d={`M ${chipX} ${chipY + 0.36 * chipHeight} L ${ffX - 20} ${chipY + 0.36 * chipHeight} L ${ffX - 20} ${ffY + 25} L ${ffX} ${ffY + 25}`}
                          fill="none"
-                         stroke={inputs['D'] ? '#ef4444' : '#333333'} strokeWidth={2} 
+                         stroke={inputs['D'] ? '#1d4ed8' : '#64748b'} 
+                         strokeWidth={4} 
                        />
                     ) : (
-                       // From Previous Q to Current D
                        <line 
                          x1={ffX - gap} y1={ffY + 25} 
                          x2={ffX} y2={ffY + 25} 
-                         stroke={qPrevVal ? '#ef4444' : '#333333'} strokeWidth={2} 
+                         stroke={qPrevVal ? '#1d4ed8' : '#64748b'} 
+                         strokeWidth={4} 
                        />
                     )}
 
-                    {/* Output Q Wire to Next D (drawn above) or Chip Pin */}
-                    {/* Also draw wire from Q to Chip Pin Q_i */}
-                    {/* Chip Pin Q_i is at top. */}
+                    {/* Output Q Wire */}
                     {(() => {
-                        // Recalculate pinX based on new definition
-                        // 0.266, 0.5, 0.733, 0.966
                         const factors = [0.266, 0.5, 0.733, 0.966];
                         const pinX = chipX + factors[i] * chipWidth;
-                        const pinY = chipY; // Top of chip
+                        const pinY = chipY; 
                         const qOutX = ffX + ffWidth;
                         const qOutY = ffY + 25;
                         
@@ -203,27 +221,24 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
                             <path 
                                 d={`M ${qOutX} ${qOutY} L ${pinX} ${qOutY} L ${pinX} ${pinY}`}
                                 fill="none"
-                                stroke={qVal ? '#ef4444' : '#333333'}
-                                strokeWidth={2}
+                                stroke={qVal ? '#1d4ed8' : '#64748b'}
+                                strokeWidth={4}
                             />
                         );
                     })()}
 
                     {/* Clock Line */}
-                    {/* Common CP line running below FFs */}
                     {(() => {
                         const busY = chipY + 0.86 * chipHeight;
                         const cpPortY = ffY + ffHeight - 20;
-                        // Branch from bus up to CP port
-                        // Go up in the gap to the left of FF
                         const wireX = ffX - 15; 
                         
                         return (
                             <path 
                                 d={`M ${wireX} ${busY} L ${wireX} ${cpPortY} L ${ffX} ${cpPortY}`}
                                 fill="none"
-                                stroke={inputs['CP'] ? '#ef4444' : '#333333'}
-                                strokeWidth={2}
+                                stroke={inputs['CP'] ? '#dc2626' : '#64748b'}
+                                strokeWidth={4}
                             />
                         );
                     })()}
@@ -233,8 +248,6 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
               })}
               
               {/* Main CP Bus Line */}
-              {/* From Left Pin to last FF branch */}
-              {/* Last FF branch is at startX + 3*(ffWidth+gap) - 15 */}
               {(() => {
                   const startX = chipX + (chipWidth - (4 * 100 + 3 * 40)) / 2;
                   const lastBranchX = startX + 3 * (100 + 40) - 15;
@@ -243,8 +256,8 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
                     <line 
                         x1={chipX} y1={busY} 
                         x2={lastBranchX} y2={busY} 
-                        stroke={inputs['CP'] ? '#ef4444' : '#333333'} 
-                        strokeWidth={2} 
+                        stroke={inputs['CP'] ? '#dc2626' : '#64748b'} 
+                        strokeWidth={4} 
                     />
                   );
               })()}
@@ -257,13 +270,19 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
                 y={chipY}
                 width={chipWidth}
                 height={chipHeight}
-                rx={10}
+                rx={12}
                 fill="#ffffff"
                 stroke="#000000"
                 strokeWidth={4}
               />
-              <text x={width/2} y={height/2} textAnchor="middle" fill="#000000" fontSize="32" fontWeight="bold">
+              {/* Chip Notch */}
+              <path d={`M ${chipX + chipWidth/2 - 15} ${chipY} A 15 15 0 0 0 ${chipX + chipWidth/2 + 15} ${chipY}`} fill="#ffffff" stroke="#000000" strokeWidth={4} />
+              
+              <text x={width/2} y={height/2} textAnchor="middle" fill="#000000" fontSize="36" fontWeight="900" letterSpacing="2">
                 {chip.name}
+              </text>
+              <text x={width/2} y={height/2 + 40} textAnchor="middle" fill="#000000" fontSize="18" fontFamily="monospace" fontWeight="bold">
+                74LS SERIES
               </text>
             </>
           )}
@@ -280,7 +299,7 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
               py = chipY + pin.y * chipHeight;
               tx = px + 15;
               ty = py + 6;
-              wx = 80;
+              wx = 140;
               wy = py;
             } else if (pin.side === 'right') {
               px = chipX + chipWidth;
@@ -306,16 +325,20 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
             }
 
             const isHigh = pin.type === 'output' ? outputs[pin.id] : inputs[pin.id];
-            const color = isHigh ? '#ef4444' : '#000000'; 
-            const wireColor = isHigh ? '#ef4444' : '#333333';
+            const wireColor = isHigh ? (pin.type === 'clock' ? '#dc2626' : '#1d4ed8') : '#64748b';
+            // No glow filter for high contrast
 
             return (
               <g key={pin.id}>
                 {/* Wire */}
-                <line x1={px} y1={py} x2={wx} y2={wy} stroke={wireColor} strokeWidth={3} />
+                <line 
+                    x1={px} y1={py} x2={wx} y2={wy} 
+                    stroke={wireColor} 
+                    strokeWidth={4} 
+                />
                 
                 {/* Pin Circle on Chip */}
-                <circle cx={px} cy={py} r={5} fill="#ffffff" stroke="#000000" strokeWidth={2} />
+                <circle cx={px} cy={py} r={6} fill="#ffffff" stroke="#000000" strokeWidth={3} />
                 
                 {/* Pin Label */}
                 {!isShiftReg && (
@@ -325,7 +348,8 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
                     textAnchor={pin.side === 'right' ? 'end' : (pin.side === 'left' ? 'start' : 'middle')} 
                     fill="#000000" 
                     fontSize="16"
-                    fontWeight="bold"
+                    fontWeight="900"
+                    fontFamily="monospace"
                     textDecoration={pin.activeLow ? "overline" : "none"}
                 >
                   {pin.label}
@@ -336,29 +360,40 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
                 {(pin.type === 'input' || pin.type === 'clock') && (
                   <g 
                     onClick={() => pin.type !== 'clock' && toggleInput(pin.id)} 
-                    className={pin.type !== 'clock' ? "cursor-pointer hover:opacity-80" : ""}
+                    className={pin.type !== 'clock' ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
                   >
+                    {/* Switch Body */}
                     <rect 
-                        x={wx - 20} 
-                        y={wy - 12} 
-                        width={40} 
-                        height={24} 
-                        rx={4} 
-                        fill={isHigh ? '#3b82f6' : '#e2e8f0'} 
-                        stroke="#64748b"
-                        strokeWidth={2}
+                        x={wx - 24} 
+                        y={wy - 14} 
+                        width={48} 
+                        height={28} 
+                        rx={14} 
+                        fill={isHigh ? '#1d4ed8' : '#e2e8f0'} 
+                        stroke={isHigh ? '#1e40af' : '#64748b'}
+                        strokeWidth={3}
+                        className="transition-colors duration-300"
                     />
-                    <text x={wx} y={wy + 5} textAnchor="middle" fill={isHigh ? 'white' : 'black'} fontSize="14" fontWeight="bold">
-                        {isHigh ? '1' : '0'}
-                    </text>
+                    {/* Switch Knob */}
+                    <circle 
+                        cx={isHigh ? wx + 10 : wx - 10} 
+                        cy={wy} 
+                        r={10} 
+                        fill={isHigh ? '#ffffff' : '#64748b'}
+                        stroke="#000000"
+                        strokeWidth={1}
+                        className="transition-all duration-300"
+                    />
+                    
                     {/* Label for switch */}
                     <text 
-                        x={wx} 
-                        y={pin.side === 'bottom' ? wy + 28 : wy - 18} 
-                        textAnchor="middle" 
-                        fill="#475569" 
+                        x={pin.side === 'left' ? wx - 40 : (pin.side === 'right' ? wx + 40 : wx)} 
+                        y={pin.side === 'left' || pin.side === 'right' ? wy + 5 : (pin.side === 'bottom' ? wy + 32 : wy - 22)} 
+                        textAnchor={pin.side === 'left' ? "end" : (pin.side === 'right' ? "start" : "middle")} 
+                        fill="#000000" 
                         fontSize="14" 
                         fontWeight="bold"
+                        fontFamily="monospace"
                     >
                         {pin.label}
                     </text>
@@ -367,14 +402,20 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
 
                 {pin.type === 'output' && (
                   <g>
-                    <circle cx={wx} cy={wy} r={10} fill={isHigh ? '#ef4444' : '#e2e8f0'} stroke="#64748b" strokeWidth={2} />
+                    {/* LED Body */}
+                    <circle cx={wx} cy={wy} r={10} fill={isHigh ? '#dc2626' : '#cbd5e1'} stroke="#000000" strokeWidth={3} />
+                    
+                    {/* LED Reflection */}
+                    <circle cx={wx - 3} cy={wy - 3} r={3} fill="white" opacity={isHigh ? 0.9 : 0.5} />
+
                     <text 
-                        x={wx} 
-                        y={pin.side === 'bottom' ? wy + 28 : wy - 18} 
-                        textAnchor="middle" 
-                        fill="#475569" 
+                        x={pin.side === 'left' ? wx - 30 : (pin.side === 'right' ? wx + 30 : wx)} 
+                        y={pin.side === 'left' || pin.side === 'right' ? wy + 5 : (pin.side === 'bottom' ? wy + 32 : wy - 22)} 
+                        textAnchor={pin.side === 'left' ? "end" : (pin.side === 'right' ? "start" : "middle")} 
+                        fill="#000000" 
                         fontSize="14" 
                         fontWeight="bold"
+                        fontFamily="monospace"
                     >
                         {pin.label}
                     </text>
@@ -383,29 +424,30 @@ export default function ChipSimulator({ chip }: ChipSimulatorProps) {
               </g>
             );
           })}
-        </svg>
+            </svg>
+        </div>
       </div>
 
       {/* Controls */}
-      <div className="mt-6 flex gap-4">
+      <div className="mt-8 flex gap-6">
         {chip.pins.some(p => p.type === 'clock') && (
             <button 
                 onClick={pulseCP}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded shadow transition"
+                className="px-8 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-full border-2 border-rose-800 transition-all transform hover:scale-105 active:scale-95"
             >
                 CP 脉冲
             </button>
         )}
         <button 
             onClick={resetChip}
-            className="px-6 py-2 bg-red-600 hover:bg-red-500 text-white rounded shadow transition"
+            className="px-8 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-full border-2 border-slate-950 transition-all transform hover:scale-105 active:scale-95"
         >
             复位 (Reset)
         </button>
       </div>
       
-      <div className="mt-4 text-sm text-slate-500">
-        点击左侧/底部开关切换输入状态 (0/1)。红色代表高电平/亮灯。
+      <div className="mt-6 text-base text-slate-900 font-bold font-mono">
+        // 点击开关切换状态 (0/1) // 红色LED代表高电平
       </div>
     </div>
   );

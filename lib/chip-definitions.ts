@@ -326,8 +326,8 @@ export const chips: ChipDef[] = [
     initialState: { val: 0, lastCP: false },
     pins: [
       { id: 'CP', label: 'CP', type: 'clock', x: 0, y: 0.1, side: 'left' },
-      { id: 'MR', label: 'MR', type: 'input', x: 0, y: 0.2, side: 'left', activeLow: true },
-      { id: 'PE', label: 'PE', type: 'input', x: 0, y: 0.3, side: 'left', activeLow: true },
+      { id: 'MR', label: 'CR', type: 'input', x: 0, y: 0.2, side: 'left', activeLow: true },
+      { id: 'PE', label: 'LD', type: 'input', x: 0, y: 0.3, side: 'left', activeLow: true },
       { id: 'CEP', label: 'CEP', type: 'input', x: 0, y: 0.4, side: 'left' },
       { id: 'CET', label: 'CET', type: 'input', x: 0, y: 0.5, side: 'left' },
       { id: 'P0', label: 'P0', type: 'input', x: 0, y: 0.6, side: 'left' },
@@ -376,7 +376,7 @@ export const chips: ChipDef[] = [
     initialState: { val: 0, lastCP: false },
     pins: [
       { id: 'CP', label: 'CP', type: 'clock', x: 0, y: 0.1, side: 'left' },
-      { id: 'MR', label: 'MR', type: 'input', x: 0, y: 0.2, side: 'left', activeLow: true },
+      { id: 'MR', label: 'CR', type: 'input', x: 0, y: 0.2, side: 'left', activeLow: true },
       { id: 'S1', label: 'S1', type: 'input', x: 0, y: 0.3, side: 'left' },
       { id: 'S0', label: 'S0', type: 'input', x: 0, y: 0.4, side: 'left' },
       { id: 'DSR', label: 'DSR', type: 'input', x: 0, y: 0.5, side: 'left' },
