@@ -1,8 +1,6 @@
 const { spawnSync } = require("node:child_process");
-const path = require("node:path");
-
-const pkgPath = require.resolve("@cloudflare/next-on-pages/package.json");
-const cliPath = path.join(path.dirname(pkgPath), "bin", "index.js");
+const isWindows = process.platform === "win32";
+const npxCmd = isWindows ? "npx.cmd" : "npx";
 
 const env = { ...process.env };
 
@@ -12,7 +10,7 @@ for (const key of Object.keys(env)) {
   }
 }
 
-const result = spawnSync(process.execPath, [cliPath, ...process.argv.slice(2)], {
+const result = spawnSync(npxCmd, ["@cloudflare/next-on-pages", ...process.argv.slice(2)], {
   stdio: "inherit",
   env,
 });
