@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { chips } from '@/lib/chip-definitions';
 import ChipSimulator from '@/components/ChipSimulator';
 
+export const runtime = 'edge';
+
 export default function Home() {
   const [selectedChipId, setSelectedChipId] = useState(chips[0].id);
 
