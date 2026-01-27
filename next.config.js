@@ -3,13 +3,13 @@ const nextConfig = {
     images: {
         unoptimized: true,
     },
-    webpack: (config, { isServer, nextRuntime }) => {
-        // Prevent Cloudflare Pages build from failing due to async_hooks
-        if (nextRuntime === 'edge' || isServer) {
-            config.resolve.alias = {
-                ...config.resolve.alias,
-                'async_hooks': false,
-            };
+    webpack: (config, { webpack, isServer }) => {
+        if (isServer) {
+            config.plugins.push(
+                new webpack.IgnorePlugin({
+                    resourceRegExp: /^async_hooks$/,
+                })
+            );
         }
         return config;
     },
