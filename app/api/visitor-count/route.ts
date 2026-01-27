@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getRequestContext } from "@cloudflare/next-on-pages";
 import { getVisitorCount, incrementVisitorCount } from "@/lib/visitor-store";
 
 export const runtime = "edge";
@@ -13,12 +14,23 @@ type Env = {
   VISITOR_KV: KVNamespaceLike;
 };
 
-export async function GET(_request: Request, { env }: { env: Env }) {
-  const count = await getVisitorCount(env.VISITOR_KV);
+const getKvBinding = (): KVNamespaceLike => {
+  const { env } = getRequestContext();
+  const kv = (env as Env | undefined)?.VISITOR_KV;
+
+  if (!kv) {
+    throw new Error("VISITOR_KV binding is not available");
+  }
+
+  return kv;
+};
+
+export async function GET(_request: Request) {
+  const count = await getVisitorCount(getKvBinding());
   return NextResponse.json({ count });
 }
 
-export async function POST(_request: Request, { env }: { env: Env }) {
-  const count = await incrementVisitorCount(env.VISITOR_KV);
+export async function POST(_request: Request) {
+  const count = await incrementVisitorCount(getKvBinding());
   return NextResponse.json({ count });
 }
