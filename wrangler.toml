@@ -2,3 +2,8 @@ name = "digital-circuit-sim"
 compatibility_date = "2024-01-27"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "out"
+
+[[kv_namespaces]]
+binding = "VISITOR_KV"
+id = "9333014e51274004a98dbddbbeaa0481"
+preview_id = "9333014e51274004a98dbddbbeaa0481"
