@@ -6,11 +6,15 @@ export default function VisitorCounter() {
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
-    const checkAndIncrement = async () => {
+    const checkAndIncrement = () => {
       const lastVisit = localStorage.getItem('last_visit_timestamp');
       const now = Date.now();
       const tenMinutes = 10 * 60 * 1000;
 
+      const storedCount = parseInt(localStorage.getItem('visitor_count') || '0', 10);
+      const safeCount = Number.isFinite(storedCount) ? storedCount : 0;
+
+      let nextCount = safeCount;
       let shouldIncrement = false;
 
       if (!lastVisit) {
@@ -22,24 +26,13 @@ export default function VisitorCounter() {
         }
       }
 
-      try {
-        let res;
-        if (shouldIncrement) {
-          res = await fetch('/api/visitor-count', { method: 'POST' });
-          if (res.ok) {
-            localStorage.setItem('last_visit_timestamp', now.toString());
-          }
-        } else {
-          res = await fetch('/api/visitor-count');
-        }
-
-        if (res.ok) {
-          const data = await res.json();
-          setCount(data.count);
-        }
-      } catch (error) {
-        console.error('Failed to fetch visitor count', error);
+      if (shouldIncrement) {
+        nextCount = safeCount + 1;
+        localStorage.setItem('visitor_count', nextCount.toString());
+        localStorage.setItem('last_visit_timestamp', now.toString());
       }
+
+      setCount(nextCount);
     };
 
     checkAndIncrement();
