@@ -41,28 +41,17 @@ export default function VisitorCounter() {
           localStorage.setItem('last_visit_timestamp', now.toString());
         }
       } catch {
-        const storedCount = parseInt(localStorage.getItem('visitor_count') || '0', 10);
-        const safeCount = Number.isFinite(storedCount) ? storedCount : 0;
-        const nextCount = shouldIncrement ? safeCount + 1 : safeCount;
-
-        if (shouldIncrement) {
-          localStorage.setItem('visitor_count', nextCount.toString());
-          localStorage.setItem('last_visit_timestamp', now.toString());
-        }
-
-        setCount(nextCount);
+        setCount(null);
       }
     };
 
     checkAndIncrement();
   }, []);
 
-  if (count === null) return null;
-
   return (
     <div className="fixed bottom-4 right-4 z-50 text-sm text-slate-900 bg-white px-4 py-2 rounded-full border-2 border-slate-900 shadow-none pointer-events-none select-none font-mono flex items-center gap-2 font-bold">
       <span className="w-3 h-3 rounded-full bg-green-600 animate-pulse border border-black"></span>
-      VISITOR #<span className="font-black text-blue-800">{count}</span>
+      VISITOR #<span className="font-black text-blue-800">{count ?? '...'}</span>
     </div>
   );
 }
