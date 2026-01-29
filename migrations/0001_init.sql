@@ -1,2 +1,0 @@
-CREATE TABLE IF NOT EXISTS visitor_counts (id INTEGER PRIMARY KEY, count INTEGER DEFAULT 0);
-INSERT OR IGNORE INTO visitor_counts (id, count) VALUES (1, 0);
