@@ -3,7 +3,7 @@ compatibility_date = "2024-01-27"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
-[[kv_namespaces]]
-binding = "VISITOR_KV"
-id = "9333014e51274004a98dbddbbeaa0481"
-preview_id = "9333014e51274004a98dbddbbeaa0481"
+[[d1_databases]]
+binding = "VISITOR_DB"
+database_name = "digital-circuit"
+database_id = "30cdd907-9902-4bee-88ee-73901a1609f2"

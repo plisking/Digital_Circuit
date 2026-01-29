@@ -1,20 +1,15 @@
 import { NextResponse } from "next/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
-import { getVisitorCount, incrementVisitorCount } from "@/lib/visitor-store";
+import { getVisitorCount, incrementVisitorCount, D1Database } from "@/lib/visitor-store";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
-type KVNamespaceLike = {
-  get<T = string>(key: string, options?: { cacheTtl?: number }): Promise<T | null>;
-  put(key: string, value: string): Promise<void>;
-};
-
 type Env = {
-  VISITOR_KV: KVNamespaceLike;
+  VISITOR_DB: D1Database;
 };
 
-const getKvBinding = (): KVNamespaceLike => {
+const getDbBinding = (): D1Database => {
   const ctx = getRequestContext();
   // 增加调试逻辑：尝试多种方式获取 env，并打印可用 keys
   const env = ctx.env;
@@ -23,20 +18,20 @@ const getKvBinding = (): KVNamespaceLike => {
     console.error("Error: Runtime env is missing");
   }
 
-  const kv = (env as Env | undefined)?.VISITOR_KV;
+  const db = (env as Env | undefined)?.VISITOR_DB;
 
-  if (!kv) {
+  if (!db) {
     // 收集当前环境中存在的变量名，辅助调试
     const availableKeys = env ? Object.keys(env).join(", ") : "env is undefined";
-    throw new Error(`VISITOR_KV binding is not available. Available bindings: [${availableKeys}]`);
+    throw new Error(`VISITOR_DB binding is not available. Available bindings: [${availableKeys}]`);
   }
 
-  return kv;
+  return db;
 };
 
 export async function GET(_request: Request) {
   try {
-    const count = await getVisitorCount(getKvBinding());
+    const count = await getVisitorCount(getDbBinding());
     return NextResponse.json({ count });
   } catch (e: any) {
     return NextResponse.json({ error: e.message, stack: e.stack }, { status: 500 });
@@ -45,7 +40,7 @@ export async function GET(_request: Request) {
 
 export async function POST(_request: Request) {
   try {
-    const count = await incrementVisitorCount(getKvBinding());
+    const count = await incrementVisitorCount(getDbBinding());
     return NextResponse.json({ count });
   } catch (e: any) {
     return NextResponse.json({ error: e.message, stack: e.stack }, { status: 500 });
