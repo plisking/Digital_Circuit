@@ -225,8 +225,8 @@ export const chips: ChipDef[] = [
       { id: 'CP1', label: 'CP1', type: 'clock', x: 0, y: 0.3, side: 'left' },
       { id: 'MR1', label: 'R0(1)', type: 'input', x: 0, y: 0.5, side: 'left' },
       { id: 'MR2', label: 'R0(2)', type: 'input', x: 0, y: 0.6, side: 'left' },
-      { id: 'MS1', label: 'R9(1)', type: 'input', x: 0, y: 0.7, side: 'left' },
-      { id: 'MS2', label: 'R9(2)', type: 'input', x: 0, y: 0.8, side: 'left' },
+      { id: 'S9_1', label: 'S9(1)', type: 'input', x: 0, y: 0.7, side: 'left' },
+      { id: 'S9_2', label: 'S9(2)', type: 'input', x: 0, y: 0.8, side: 'left' },
       
       { id: 'Q0', label: 'QA', type: 'output', x: 1, y: 0.2, side: 'right' },
       { id: 'Q1', label: 'QB', type: 'output', x: 1, y: 0.4, side: 'right' },
@@ -246,8 +246,8 @@ export const chips: ChipDef[] = [
       const cp1 = inputs['CP1'];
       const mr1 = inputs['MR1'];
       const mr2 = inputs['MR2'];
-      const ms1 = inputs['MS1'];
-      const ms2 = inputs['MS2'];
+      const s9_1 = inputs['S9_1'];
+      const s9_2 = inputs['S9_2'];
       
       const linkQaCp1 = inputs['SW_QA_CP1'];
       const linkQdCp0 = inputs['SW_QD_CP0'];
@@ -255,7 +255,7 @@ export const chips: ChipDef[] = [
       // Reset logic
       if (mr1 && mr2) {
         q0=0; q1=0; q2=0; q3=0;
-      } else if (ms1 && ms2) {
+      } else if (s9_1 && s9_2) {
         q0=1; q1=0; q2=0; q3=1; // Set to 9 (1001)
       } else {
         // Detect external edges
